@@ -45,7 +45,14 @@ public class Environment2DController(Environment2DRepository repository) : Contr
         {
             return BadRequest("A user can only have up to 5 environments.");
         }
-        
+        if (environment.Name.Length <= 1 || string.IsNullOrWhiteSpace(environment.Name))
+        {
+            return BadRequest("The environment name must be at least 1 character long.");
+        }
+        if (environment.Name.Length > 25)
+        {
+            return BadRequest("The environment name must be 25 characters or less.");
+        }
         environment.Id = Guid.NewGuid().ToString();
         await _repository.AddAsync(environment);
         return CreatedAtAction(nameof(Get), new { id = environment.Id }, environment);
