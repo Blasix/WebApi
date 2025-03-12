@@ -4,19 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ICT1._3_API.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ICT1._3_API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
-public class Object2DController : ControllerBase
+public class Object2DController(Object2DRepository repository) : ControllerBase
 {
-    private readonly Object2DRepository _repository;
-
-    public Object2DController(Object2DRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IObject2DRepository _repository = repository;
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Object2D>>> Get()

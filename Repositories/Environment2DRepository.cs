@@ -5,7 +5,17 @@ using Microsoft.Data.SqlClient;
 
 namespace ICT1._3_API.Repositories;
 
-public class Environment2DRepository(string connectionString)
+public interface IEnvironment2DRepository
+{
+    Task<IEnumerable<Environment2D>> GetAllAsync();
+    Task<Environment2D> GetByIdAsync(Guid id);
+    Task<IEnumerable<Environment2D>> GetByUserIdAsync(string userId);
+    Task AddAsync(Environment2D environment);
+    Task UpdateAsync(Environment2D environment);
+    Task DeleteAsync(Guid id);
+}
+
+public class Environment2DRepository(string connectionString) : IEnvironment2DRepository
 {
     public async Task<IEnumerable<Environment2D>> GetAllAsync()
     {

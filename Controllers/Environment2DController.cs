@@ -1,19 +1,16 @@
 using ICT1._3_API.Models;
 using ICT1._3_API.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ICT1._3_API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
-public class Environment2DController : ControllerBase
+public class Environment2DController(Environment2DRepository repository) : ControllerBase
 {
-    private readonly Environment2DRepository _repository;
-
-    public Environment2DController(Environment2DRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IEnvironment2DRepository _repository = repository;
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Environment2D>>> Get()

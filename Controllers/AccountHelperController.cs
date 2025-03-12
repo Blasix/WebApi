@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ICT1._3_API.Controllers;
 
 [ApiController]
+[Authorize]
 public class AccountHelperController(UserManager<IdentityUser> userManager) : ControllerBase
 {
     [HttpGet("user/{userMail}")]
