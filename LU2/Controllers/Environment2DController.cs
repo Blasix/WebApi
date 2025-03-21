@@ -1,9 +1,10 @@
-using ICT1._3_API.Models;
-using ICT1._3_API.Repositories;
+using System.Security.Claims;
+using LU2.Models;
+using LU2.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ICT1._3_API.Controllers;
+namespace LU2.Controllers;
 
 [ApiController]
 [Authorize]
@@ -15,31 +16,18 @@ public class Environment2DController(Environment2DRepository repository) : Contr
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Environment2D>>> Get()
     {
-        var environments = await _repository.GetAllAsync();
-        return Ok(environments);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Environment2D>> Get(Guid id)
-    {
-        var environment = await _repository.GetByIdAsync(id);
-        if (environment == null)
-        {
-            return NotFound();
-        }
-        return Ok(environment);
-    }
-
-    [HttpGet("user/{userId}")]
-    public async Task<ActionResult<IEnumerable<Environment2D>>> GetByUserId(Guid userId)
-    {
-        var userEnvironments = await _repository.GetByUserIdAsync(userId.ToString());
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        var userEnvironments = await _repository.GetByUserIdAsync(userId);
         return Ok(userEnvironments);
     }
 
     [HttpPost]
     public async Task<ActionResult<Environment2D>> Post([FromBody] Environment2D environment)
     {
+        // Set the UserId of the environment to the UserId of the authenticated user
+        environment.UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
         var userEnvironments = await _repository.GetByUserIdAsync(environment.UserId);
         if (userEnvironments.Count() >= 5)
         {
@@ -58,25 +46,13 @@ public class Environment2DController(Environment2DRepository repository) : Contr
         return CreatedAtAction(nameof(Get), new { id = environment.Id }, environment);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Put(Guid id, [FromBody] Environment2D updatedEnvironment)
-    {
-        var environment = await _repository.GetByIdAsync(id);
-        if (environment == null)
-        {
-            return NotFound();
-        }
-
-        updatedEnvironment.Id = id.ToString();
-        await _repository.UpdateAsync(updatedEnvironment);
-        return NoContent();
-    }
-
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var environment = await _repository.GetByIdAsync(id);
-        if (environment == null)
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        var environments = await _repository.GetByUserIdAsync(userId);
+        if (environments == null || environments.All(e => e.Id != id.ToString()))
         {
             return NotFound();
         }

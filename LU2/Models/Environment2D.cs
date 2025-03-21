@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-
-namespace ICT1._3_API.Models;
+namespace LU2.Models;
 
 public class Environment2D 
 {

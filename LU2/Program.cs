@@ -1,4 +1,4 @@
-using ICT1._3_API.Repositories;
+using LU2.Repositories;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
