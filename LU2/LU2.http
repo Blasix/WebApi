@@ -1,0 +1,6 @@
+@LU2_HostAddress = http://localhost:5091
+
+GET {{LU2_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

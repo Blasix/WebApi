@@ -1,30 +1,21 @@
 using System.Data;
 using Dapper;
-using ICT1._3_API.Models;
+using LU2.Models;
 using Microsoft.Data.SqlClient;
 
-namespace ICT1._3_API.Repositories;
+namespace LU2.Repositories;
 
 public interface IObject2DRepository
 {
-    Task<IEnumerable<Object2D>> GetAllAsync();
     Task<Object2D> GetByIdAsync(Guid id);
     Task<IEnumerable<Object2D>> GetByEnvironmentIdAsync(Guid environmentId);
     Task AddAsync(Object2D object2D);
-    Task UpdateAsync(Object2D object2D);
     Task DeleteAsync(Guid id);
+    Task DeleteByEnvironmentIdAsync(Guid environmentId);
 }
 
 public class Object2DRepository(string connectionString) : IObject2DRepository
 {
-    public async Task<IEnumerable<Object2D>> GetAllAsync()
-    {
-        using (IDbConnection db = new SqlConnection(connectionString))
-        {
-            return await db.QueryAsync<Object2D>("SELECT * FROM Object2D");
-        }
-    }
-    
     public async Task<Object2D> GetByIdAsync(Guid id)
     {
         using (IDbConnection db = new SqlConnection(connectionString))
@@ -49,15 +40,6 @@ public class Object2DRepository(string connectionString) : IObject2DRepository
             await db.ExecuteAsync(sql, object2D);
         }
     }
-
-    public async Task UpdateAsync(Object2D object2D)
-    {
-        using (IDbConnection db = new SqlConnection(connectionString))
-        {
-            var sql = "UPDATE Object2D SET PrefabId = @PrefabId, PositionX = @PositionX, PositionY = @PositionY, ScaleX = @ScaleX, ScaleY = @ScaleY, RotationZ = @RotationZ, SortingLayer = @SortingLayer, EnvironmentId = @EnvironmentId WHERE Id = @Id";
-            await db.ExecuteAsync(sql, object2D);
-        }
-    }
     
     public async Task DeleteAsync(Guid id)
     {
@@ -65,6 +47,15 @@ public class Object2DRepository(string connectionString) : IObject2DRepository
         {
             var sql = "DELETE FROM Object2D WHERE Id = @Id";
             await db.ExecuteAsync(sql, new { Id = id });
+        }
+    }
+    
+    public async Task DeleteByEnvironmentIdAsync(Guid environmentId)
+    {
+        using (IDbConnection db = new SqlConnection(connectionString))
+        {
+            var sql = "DELETE FROM Object2D WHERE EnvironmentId = @EnvironmentId";
+            await db.ExecuteAsync(sql, new { EnvironmentId = environmentId });
         }
     }
 }
