@@ -9,17 +9,14 @@ namespace LU2.Controllers;
 [ApiController]
 [Authorize]
 [Route("[controller]")]
-public class Environment2DController(Environment2DRepository environment2DRepository, Object2DRepository object2DRepository) : ControllerBase
+public class Environment2DController(IEnvironment2DRepository environment2DRepository, IObject2DRepository object2DRepository) : ControllerBase
 {
-    private readonly IEnvironment2DRepository _environment2DRepository = environment2DRepository;
-    private readonly IObject2DRepository _object2DRepository = object2DRepository;
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Environment2D>>> Get()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
-        var userEnvironments = await _environment2DRepository.GetByUserIdAsync(userId);
+        var userEnvironments = await environment2DRepository.GetByUserIdAsync(userId);
         return Ok(userEnvironments);
     }
 
@@ -29,10 +26,14 @@ public class Environment2DController(Environment2DRepository environment2DReposi
         // Set the UserId of the environment to the UserId of the authenticated user
         environment.UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
-        var userEnvironments = await _environment2DRepository.GetByUserIdAsync(environment.UserId);
+        var userEnvironments = (await environment2DRepository.GetByUserIdAsync(environment.UserId)).ToList();
         if (userEnvironments.Count() >= 5)
         {
             return BadRequest("A user can only have up to 5 environments.");
+        }
+        if (userEnvironments.Any(e => e.Name == environment.Name))
+        {
+            return BadRequest("An environment with this name already exists.");
         }
         if (environment.Name.Length <= 1 || string.IsNullOrWhiteSpace(environment.Name))
         {
@@ -43,7 +44,7 @@ public class Environment2DController(Environment2DRepository environment2DReposi
             return BadRequest("The environment name must be 25 characters or less.");
         }
         environment.Id = Guid.NewGuid().ToString();
-        await _environment2DRepository.AddAsync(environment);
+        await environment2DRepository.AddAsync(environment);
         return CreatedAtAction(nameof(Get), new { id = environment.Id }, environment);
     }
 
@@ -57,7 +58,7 @@ public class Environment2DController(Environment2DRepository environment2DReposi
             return Unauthorized();
         }
 
-        await _environment2DRepository.DeleteAsync(id);
+        await environment2DRepository.DeleteAsync(id);
         return NoContent();
     }
     
@@ -71,7 +72,7 @@ public class Environment2DController(Environment2DRepository environment2DReposi
             return Unauthorized();
         }
         
-        var environmentObjects = await _object2DRepository.GetByEnvironmentIdAsync(id);
+        var environmentObjects = await object2DRepository.GetByEnvironmentIdAsync(id);
         return Ok(environmentObjects);
     }
     
@@ -87,7 +88,7 @@ public class Environment2DController(Environment2DRepository environment2DReposi
         
         object2D.Id = Guid.NewGuid().ToString();
         object2D.EnvironmentId = id.ToString();
-        await _object2DRepository.AddAsync(object2D);
+        await object2DRepository.AddAsync(object2D);
         return CreatedAtAction(nameof(GetObjects), new { id = object2D.Id }, object2D);
     }
     
@@ -101,13 +102,13 @@ public class Environment2DController(Environment2DRepository environment2DReposi
             return Unauthorized();
         }
         
-        var object2D = await _object2DRepository.GetByIdAsync(objectId);
+        var object2D = await object2DRepository.GetByIdAsync(objectId);
         if (object2D == null || object2D.EnvironmentId != id.ToString())
         {
             return NotFound();
         }
 
-        await _object2DRepository.DeleteAsync(objectId);
+        await object2DRepository.DeleteAsync(objectId);
         return NoContent();
     }
     
@@ -121,13 +122,13 @@ public class Environment2DController(Environment2DRepository environment2DReposi
             return Unauthorized();
         }
         
-        await _object2DRepository.DeleteByEnvironmentIdAsync(id);
+        await object2DRepository.DeleteByEnvironmentIdAsync(id);
         return NoContent();
     }
     
     private async Task<bool> IsUserEnvironment(Guid id, string userId)
     {
-        var environments = await _environment2DRepository.GetByUserIdAsync(userId);
+        var environments = await environment2DRepository.GetByUserIdAsync(userId);
         return environments.Any(e => e.Id.Equals(id.ToString()));
     }
 }

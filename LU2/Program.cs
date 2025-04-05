@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAuthorization();
 
-string connStr = builder.Configuration["SqlConnectionString"];
+string? connStr = builder.Configuration["SqlConnectionString"];
 
 builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
 
@@ -32,14 +32,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
+bool sqlConnectionStringFound = !string.IsNullOrWhiteSpace(connStr); // Check if the connection string is found
 
-// Register UserRepository in the DI container
-builder.Services.AddScoped<Environment2DRepository>(provider => new Environment2DRepository(connStr));
-builder.Services.AddScoped<Object2DRepository>(provider => new Object2DRepository(connStr));
+if (sqlConnectionStringFound)
+{
+    // Register repositories
+    builder.Services.AddTransient<IEnvironment2DRepository, Environment2DRepository>(provider => 
+        new Environment2DRepository(connStr));
+    builder.Services.AddTransient<IObject2DRepository, Object2DRepository>(provider => 
+        new Object2DRepository(connStr));
+}
 
 var app = builder.Build();
-
-bool sqlConnectionStringFound = !string.IsNullOrWhiteSpace(connStr); // Check if the connection string is found
 
 // Web API routes
 
