@@ -45,7 +45,7 @@ public class Environment2DController(IEnvironment2DRepository environment2DRepos
         }
         environment.Id = Guid.NewGuid().ToString();
         await environment2DRepository.AddAsync(environment);
-        return CreatedAtAction(nameof(Get), new { id = environment.Id }, environment);
+        return CreatedAtAction(nameof(Get), environment);
     }
 
     [HttpDelete("{id}")]
@@ -89,7 +89,7 @@ public class Environment2DController(IEnvironment2DRepository environment2DRepos
         object2D.Id = Guid.NewGuid().ToString();
         object2D.EnvironmentId = id.ToString();
         await object2DRepository.AddAsync(object2D);
-        return CreatedAtAction(nameof(GetObjects), new { id = object2D.Id }, object2D);
+        return CreatedAtAction(nameof(GetObjects), object2D);
     }
     
     [HttpDelete("{id}/objects/{objectId}")]
